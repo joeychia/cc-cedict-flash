@@ -8,7 +8,6 @@ export interface PinyinEnOptions {
 }
 export interface CedictData {
     pinyins: string[];
-    pinyinIndices: Uint16Array;
     defLengths: Uint16Array;
     definitions: string;
     trieChars: Uint16Array;
@@ -19,3 +18,5 @@ export interface CedictData {
 export declare function createCedictFlash(data: CedictData): {
     pinyinEn: (text: string, options?: PinyinEnOptions) => EnglishResult[];
 };
+export declare function pinyinEn(text: string, options?: PinyinEnOptions): EnglishResult[];
+export { builtinCedictData } from './data-adapter.js';

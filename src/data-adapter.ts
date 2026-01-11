@@ -1,13 +1,3 @@
-import {
-  CEDICT_PINYINS,
-  CEDICT_PINYIN_INDICES,
-  CEDICT_DEF_LENGTHS,
-  CEDICT_DEFINITIONS,
-  CEDICT_TRIE_CHARS,
-  CEDICT_TRIE_VALUES,
-  CEDICT_TRIE_CHILD_INDICES,
-  CEDICT_TRIE_CHILD_COUNTS,
-} from '../../lib/data/cedict'
 // Use local copy within cc-cedict-flash
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import {
@@ -23,7 +13,13 @@ import type { CedictData } from './index'
 
 function base64ToUint16Array(base64: string): Uint16Array {
   const binaryString =
-    typeof atob === 'function' ? atob(base64) : Buffer.from(base64, 'base64').toString('binary')
+    typeof atob === 'function'
+      ? atob(base64)
+      : (typeof (globalThis as any).Buffer !== 'undefined'
+          ? (globalThis as any).Buffer.from(base64, 'base64').toString('binary')
+          : (() => {
+              throw new Error('Base64 decoding unavailable')
+            })())
   const len = binaryString.length
   const bytes = new Uint8Array(len)
   for (let i = 0; i < len; i++) {
@@ -34,7 +30,13 @@ function base64ToUint16Array(base64: string): Uint16Array {
 
 function base64ToUint32Array(base64: string): Uint32Array {
   const binaryString =
-    typeof atob === 'function' ? atob(base64) : Buffer.from(base64, 'base64').toString('binary')
+    typeof atob === 'function'
+      ? atob(base64)
+      : (typeof (globalThis as any).Buffer !== 'undefined'
+          ? (globalThis as any).Buffer.from(base64, 'base64').toString('binary')
+          : (() => {
+              throw new Error('Base64 decoding unavailable')
+            })())
   const len = binaryString.length
   const bytes = new Uint8Array(len)
   for (let i = 0; i < len; i++) {

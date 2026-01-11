@@ -40,6 +40,12 @@ function toneSymbolToNumToken(token) {
 function toneSymbolToNum(input) {
     return input.split(/\s+/).map(toneSymbolToNumToken).join(' ');
 }
+function convertNumericOverride(numeric) {
+    return numeric.split(/\s+/).map(convertNumericToken).join(' ');
+}
+function convertNumericToken(part) {
+    return toneSymbolToNumToken(part.replace(/[1-5]$/, (m) => m));
+}
 function findChild(nodeChildIndices, nodeChildCounts, nodeChars, nodeIdx, charCode) {
     const start = nodeChildIndices[nodeIdx];
     const count = nodeChildCounts[nodeIdx];
@@ -63,19 +69,26 @@ function findChild(nodeChildIndices, nodeChildCounts, nodeChars, nodeIdx, charCo
     return -1;
 }
 export function createCedictFlash(data) {
-    const pinyinIndices = data.pinyinIndices;
     const defLengths = data.defLengths;
     const nodeChars = data.trieChars;
     const nodeValueIndices = data.trieValues;
     const nodeChildIndices = data.trieChildIndices;
     const nodeChildCounts = data.trieChildCounts;
-    const defOffsets = new Uint32Array(pinyinIndices.length + 1);
+    const defOffsets = new Uint32Array(defLengths.length + 1);
     let cur = 0;
-    for (let i = 0; i < pinyinIndices.length; i++) {
+    for (let i = 0; i < defLengths.length; i++) {
         defOffsets[i] = cur;
         cur += defLengths[i];
     }
-    defOffsets[pinyinIndices.length] = cur;
+    defOffsets[defLengths.length] = cur;
+    // No overrides: longest-match segmentation with per-entry pinyins ensures correct mapping
+    function applyToneOptions(pinyinStr, toneType) {
+        if (toneType === 'none')
+            return removeToneMarks(pinyinStr);
+        if (toneType === 'num')
+            return toneSymbolToNum(pinyinStr);
+        return pinyinStr;
+    }
     function pinyinEn(text, options) {
         if (!text)
             return [];
@@ -104,13 +117,8 @@ export function createCedictFlash(data) {
                 const end = defOffsets[longestMatchValueIdx + 1];
                 const defStr = data.definitions.substring(start, end);
                 const en = defStr.split('\u0001');
-                let pinyinStr = data.pinyins[pinyinIndices[longestMatchValueIdx]];
-                if (options?.toneType === 'none') {
-                    pinyinStr = removeToneMarks(pinyinStr);
-                }
-                else if (options?.toneType === 'num') {
-                    pinyinStr = toneSymbolToNum(pinyinStr);
-                }
+                let pinyinStr = data.pinyins[longestMatchValueIdx];
+                pinyinStr = applyToneOptions(pinyinStr, options?.toneType);
                 results.push({ zh, pinyin: pinyinStr, en });
                 i += longestMatchLen;
             }
@@ -124,3 +132,12 @@ export function createCedictFlash(data) {
     }
     return { pinyinEn };
 }
+import { builtinCedictData } from './data-adapter.js';
+let defaultApi;
+export function pinyinEn(text, options) {
+    if (!defaultApi) {
+        defaultApi = createCedictFlash(builtinCedictData());
+    }
+    return defaultApi.pinyinEn(text, options);
+}
+export { builtinCedictData } from './data-adapter.js';
