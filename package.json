@@ -1,5 +1,5 @@
 {
-  "name": "cc-cedict-flash",
+  "name": "@joeychia/cc-cedict-flash",
   "version": "0.1.0",
   "description": "CC-CEDICT based Chinese→English lookup with pinyin output and Trie-based segmentation.",
   "type": "module",
@@ -40,6 +40,9 @@
     "url": "https://github.com/joeychia/cc-cedict-flash/issues"
   },
   "homepage": "https://github.com/joeychia/cc-cedict-flash",
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com"
+  },
   "devDependencies": {
     "typescript": "^5.6.3"
   }
