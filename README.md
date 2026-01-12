@@ -60,12 +60,12 @@ Compared to [cc-cedict](https://github.com/edvardsr/cc-cedict) (v1.1.1):
 
 | Metric | cc-cedict-flash | cc-cedict |
 | :--- | :--- | :--- |
-| **Download Size** | **~3.6 MB** | ~20.7 MB |
+| **Download Size** | **~3.7 MB** | ~20.7 MB |
 | **Entries** | ~124k (Same source) | ~124k |
-| **Memory (RSS Delta)** | **~126 MB** | ~420 MB |
-| **Heap Delta** | **~38 MB** | ~407 MB |
+| **Memory (RSS Delta)** | **~108 MB** | ~420 MB |
+| **Heap Delta** | **~35 MB** | ~407 MB |
 
-`cc-cedict-flash` uses a compressed Trie and packed data structures to achieve **~3.3x lower RSS** and **~11x lower Heap** usage while providing the same dictionary coverage.
+`cc-cedict-flash` uses a compressed Trie and packed data structures to achieve **~3.9x lower RSS** and **~11.6x lower Heap** usage while providing the same dictionary coverage.
 
 To reproduce:
 ```bash

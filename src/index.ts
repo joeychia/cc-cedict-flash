@@ -9,7 +9,8 @@ export interface PinyinEnOptions {
 }
 
 export interface CedictData {
-  pinyins: string[]
+  pinyinsStr: string
+  pinyinOffsets: Uint32Array
   defLengths: Uint16Array
   definitions: string
   tokens?: string[]
@@ -163,7 +164,11 @@ export function createCedictFlash(data: CedictData) {
         const defStr = data.definitions.substring(start, end)
         const expanded = expandDef(defStr)
         const en = expanded.split('\u0001')
-        let pinyinStr = data.pinyins[longestMatchValueIdx]
+        
+        const pStart = data.pinyinOffsets[longestMatchValueIdx]
+        const pEnd = data.pinyinOffsets[longestMatchValueIdx + 1]
+        let pinyinStr = data.pinyinsStr.substring(pStart, pEnd)
+        
         pinyinStr = applyToneOptions(pinyinStr, options?.toneType)
         results.push({ zh, pinyin: pinyinStr, en })
         i += longestMatchLen

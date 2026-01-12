@@ -83,63 +83,19 @@ function buildPackedDict(rawPath, outPath) {
   }
 
   // 2. Definition Compression
-  // Analyze frequency of words in all definitions
   let allDefs = values.join('\u0001')
-  // We want to replace common phrases/words.
-  // Let's count word frequencies.
   const wordCounts = new Map()
   const words = allDefs.split(/[\s\u0001,;()]+/)
   for (const w of words) {
-    if (w.length < 3) continue // Skip short words
+    if (w.length < 3) continue 
     wordCounts.set(w, (wordCounts.get(w) || 0) + 1)
   }
   
-  // Score = frequency * length (approximate savings)
   const candidates = Array.from(wordCounts.entries())
     .map(([w, count]) => ({ w, count, score: count * w.length }))
     .sort((a, b) => b.score - a.score)
-    .slice(0, 30) // Take top 30 candidates
+    .slice(0, 30) 
   
-  // Use unused control chars \u0002 to \u001F (excluding \u0001 which is separator)
-  const tokens = []
-  let charCode = 2
-  for (const { w } of candidates) {
-    if (charCode === 10 || charCode === 13) charCode++ // Skip newline/CR
-    if (charCode > 31) break
-    const tokenChar = String.fromCharCode(charCode)
-    tokens.push(w)
-    // Global replace
-    allDefs = allDefs.split(w).join(tokenChar)
-    charCode++
-  }
-  
-  console.log(`Compressed definitions with ${tokens.length} tokens.`)
-  
-  // Reconstruct individual definition lengths
-  // We need to split allDefs back into the original structure?
-  // No, `allDefs` was joined by `\u0001` which is our separator.
-  // Wait, `values` were joined by `\u0001` individually too?
-  // No, `tempMap` joined definitions with `\u0001`.
-  // Then `values.join('\u0001')` means we have a massive string separated by `\u0001`.
-  // Wait, if a definition itself contained `\u0001`, this logic is flawed.
-  // `tempMap` joined multiple definitions for one word with `\u0001`.
-  // If we join ALL entries with `\u0001`, we lose the boundary between entries?
-  // Ah, we need to track lengths.
-  
-  // Correct approach: Apply replacement to each entry individually to maintain boundaries
-  // Or just perform replacement on the giant string IF we can verify boundaries.
-  // But we need to build `defLengths` array.
-  
-  // Let's apply replacement to the `values` array.
-  for (let i = 0; i < values.length; i++) {
-    let d = values[i]
-    for (let t = 0; t < tokens.length; t++) {
-        const tokenChar = String.fromCharCode(tokens[t].charCodeAt(0) < 32 ? (tokens[t].length === 1 ? tokens[t].charCodeAt(0) : t + 2 + (t+2>=10?1:0) + (t+2>=13?1:0)) : 0) 
-        // Logic for charCode was complex above, let's simplify.
-    }
-  }
-  
-  // Let's redo the char assignment simply.
   const tokenMap = new Map()
   let nextChar = 2
   for (const { w } of candidates) {
@@ -156,7 +112,6 @@ function buildPackedDict(rawPath, outPath) {
   
   for (let i = 0; i < keys.length; i++) {
     let def = values[i]
-    // Apply replacements
     for (const [w, char] of tokenMap) {
         def = def.split(w).join(char)
     }
@@ -165,6 +120,19 @@ function buildPackedDict(rawPath, outPath) {
   }
   
   console.log('Total definitions concatenated length: ' + definitionsStr.length)
+
+  // 3. Pinyin Compression
+  let pinyinsStr = ''
+  const pinyinLengths = new Uint8Array(pinyins.length)
+  for (let i = 0; i < pinyins.length; i++) {
+    const len = pinyins[i].length
+    if (len > 255) {
+        throw new Error('Pinyin too long for Uint8: ' + pinyins[i])
+    }
+    pinyinLengths[i] = len
+    pinyinsStr += pinyins[i]
+  }
+  console.log('Total pinyins concatenated length: ' + pinyinsStr.length)
 
   const root = { children: new Map(), valueIndex: -1 }
   let totalNodes = 1
@@ -219,14 +187,16 @@ function buildPackedDict(rawPath, outPath) {
   console.log('Packed trie nodes: ' + totalNodes)
 
   const defLengthsBase64 = Buffer.from(defLengths.buffer).toString('base64')
+  const pinyinLengthsBase64 = Buffer.from(pinyinLengths.buffer).toString('base64')
   const nodeCharsBase64 = Buffer.from(nodeChars.buffer).toString('base64')
   const nodeValueIndicesBase64 = Buffer.from(nodeValueIndices.buffer).toString('base64')
   const nodeChildIndicesBase64 = Buffer.from(nodeChildIndices.buffer).toString('base64')
   const nodeChildCountsBase64 = Buffer.from(nodeChildCounts.buffer).toString('base64')
 
-  // Important: Explicitly type constants as string to avoid literal type bloat in .d.ts
+  // Use 'let' to avoid huge literal types in d.ts
   const outputContent =
-    'export const CEDICT_PINYINS: string[] = ' + JSON.stringify(pinyins) + ';\n' +
+    'export let CEDICT_PINYINS: string = ' + JSON.stringify(pinyinsStr) + ';\n' +
+    'export let CEDICT_PINYIN_LENGTHS: string = "' + pinyinLengthsBase64 + '";\n' +
     'export const CEDICT_DEF_TOKENS: string[] = ' + JSON.stringify(tokenList) + ';\n' +
     'export let CEDICT_DEF_LENGTHS: string = "' + defLengthsBase64 + '";\n' +
     'export let CEDICT_DEFINITIONS: string = ' + JSON.stringify(definitionsStr) + ';\n' +

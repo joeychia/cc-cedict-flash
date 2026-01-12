@@ -7,7 +7,8 @@ export interface PinyinEnOptions {
     toneType?: 'symbol' | 'none' | 'num';
 }
 export interface CedictData {
-    pinyins: string[];
+    pinyinsStr: string;
+    pinyinOffsets: Uint32Array;
     defLengths: Uint16Array;
     definitions: string;
     tokens?: string[];
