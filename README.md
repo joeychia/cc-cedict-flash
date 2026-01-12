@@ -54,8 +54,20 @@ import { pinyinEn, type EnglishResult, type PinyinEnOptions } from 'cc-cedict-fl
 
 - Array of tokens: `{ zh: string, pinyin: string, en: string[] }`
 
-### Footprint
+### Footprint & Benchmarks
 
+Compared to [cc-cedict](https://github.com/edvardsr/cc-cedict) (v1.1.1):
+
+| Metric | cc-cedict-flash | cc-cedict |
+| :--- | :--- | :--- |
+| **Download Size** | ~20.4 MB | ~20.7 MB |
+| **Entries** | ~124k (Same source) | ~124k |
+| **Memory (RSS Delta)** | **~127 MB** | ~420 MB |
+| **Heap Delta** | **~36 MB** | ~407 MB |
+
+`cc-cedict-flash` uses a compressed Trie and packed data structures to achieve **~3.3x lower RSS** and **~11x lower Heap** usage while providing the same dictionary coverage.
+
+To reproduce:
 ```bash
 # From cc-cedict-flash/
 npm run footprint
