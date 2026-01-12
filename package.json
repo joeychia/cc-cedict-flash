@@ -1,6 +1,6 @@
 {
   "name": "@joeychia/cc-cedict-flash",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "CC-CEDICT based Chinese→English lookup with pinyin output and Trie-based segmentation.",
   "type": "module",
   "main": "./dist/index.js",
