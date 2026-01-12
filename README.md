@@ -60,10 +60,10 @@ Compared to [cc-cedict](https://github.com/edvardsr/cc-cedict) (v1.1.1):
 
 | Metric | cc-cedict-flash | cc-cedict |
 | :--- | :--- | :--- |
-| **Download Size** | **~3.8 MB** | ~20.7 MB |
+| **Download Size** | **~3.6 MB** | ~20.7 MB |
 | **Entries** | ~124k (Same source) | ~124k |
-| **Memory (RSS Delta)** | **~127 MB** | ~420 MB |
-| **Heap Delta** | **~36 MB** | ~407 MB |
+| **Memory (RSS Delta)** | **~126 MB** | ~420 MB |
+| **Heap Delta** | **~38 MB** | ~407 MB |
 
 `cc-cedict-flash` uses a compressed Trie and packed data structures to achieve **~3.3x lower RSS** and **~11x lower Heap** usage while providing the same dictionary coverage.
 

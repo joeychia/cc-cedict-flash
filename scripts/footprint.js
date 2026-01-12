@@ -40,7 +40,7 @@ function packTarball() {
 
 async function measureMemory() {
   const before = process.memoryUsage()
-  const { pinyinEn } = await import('../dist/cc-cedict-flash/src/index.js')
+  const { pinyinEn } = await import('../dist/index.js')
   const afterImport = process.memoryUsage()
   pinyinEn('你好')
   pinyinEn('3Q! 11区有4S店吗？ 2019冠状病毒病很可怕。')
