@@ -1,5 +1,5 @@
 import assert from 'node:assert'
-import { pinyinEn } from '../dist/cc-cedict-flash/src/index.js'
+import { pinyinEn } from '../dist/index.js'
 
 function stringifyTokens(tokens) {
   return tokens.map(t => `${t.zh}|${t.pinyin}|${t.en.join(';')}`).join(' || ')

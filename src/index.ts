@@ -12,6 +12,7 @@ export interface CedictData {
   pinyins: string[]
   defLengths: Uint16Array
   definitions: string
+  tokens?: string[]
   trieChars: Uint16Array
   trieValues: Uint32Array
   trieChildIndices: Uint32Array
@@ -62,14 +63,6 @@ function toneSymbolToNum(input: string): string {
   return input.split(/\s+/).map(toneSymbolToNumToken).join(' ')
 }
 
-function convertNumericOverride(numeric: string): string {
-  return numeric.split(/\s+/).map(convertNumericToken).join(' ')
-}
-
-function convertNumericToken(part: string): string {
-  return toneSymbolToNumToken(part.replace(/[1-5]$/, (m) => m))
-}
-
 function findChild(
   nodeChildIndices: Uint32Array,
   nodeChildCounts: Uint16Array,
@@ -110,12 +103,36 @@ export function createCedictFlash(data: CedictData) {
   }
   defOffsets[defLengths.length] = cur
 
-  // No overrides: longest-match segmentation with per-entry pinyins ensures correct mapping
+  // Pre-calculate token replacement map if tokens exist
+  const tokenMap: string[] = []
+  if (data.tokens && data.tokens.length > 0) {
+    let nextChar = 2
+    for (let i = 0; i < data.tokens.length; i++) {
+      if (nextChar === 10 || nextChar === 13) nextChar++
+      if (nextChar > 31) break
+      tokenMap[nextChar] = data.tokens[i]
+      nextChar++
+    }
+  }
 
   function applyToneOptions(pinyinStr: string, toneType?: PinyinEnOptions['toneType']): string {
     if (toneType === 'none') return removeToneMarks(pinyinStr)
     if (toneType === 'num') return toneSymbolToNum(pinyinStr)
     return pinyinStr
+  }
+
+  function expandDef(def: string): string {
+    if (!data.tokens || data.tokens.length === 0) return def
+    let out = ''
+    for (let i = 0; i < def.length; i++) {
+      const code = def.charCodeAt(i)
+      if (code < 32 && code > 1 && tokenMap[code]) {
+        out += tokenMap[code]
+      } else {
+        out += def[i]
+      }
+    }
+    return out
   }
 
   function pinyinEn(text: string, options?: PinyinEnOptions): EnglishResult[] {
@@ -140,11 +157,12 @@ export function createCedictFlash(data: CedictData) {
         }
       }
       if (longestMatchLen > 0) {
-          const zh = text.substr(i, longestMatchLen)
-          const start = defOffsets[longestMatchValueIdx]
-          const end = defOffsets[longestMatchValueIdx + 1]
-          const defStr = data.definitions.substring(start, end)
-          const en = defStr.split('\u0001')
+        const zh = text.substr(i, longestMatchLen)
+        const start = defOffsets[longestMatchValueIdx]
+        const end = defOffsets[longestMatchValueIdx + 1]
+        const defStr = data.definitions.substring(start, end)
+        const expanded = expandDef(defStr)
+        const en = expanded.split('\u0001')
         let pinyinStr = data.pinyins[longestMatchValueIdx]
         pinyinStr = applyToneOptions(pinyinStr, options?.toneType)
         results.push({ zh, pinyin: pinyinStr, en })

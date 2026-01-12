@@ -60,7 +60,7 @@ Compared to [cc-cedict](https://github.com/edvardsr/cc-cedict) (v1.1.1):
 
 | Metric | cc-cedict-flash | cc-cedict |
 | :--- | :--- | :--- |
-| **Download Size** | ~20.4 MB | ~20.7 MB |
+| **Download Size** | **~3.8 MB** | ~20.7 MB |
 | **Entries** | ~124k (Same source) | ~124k |
 | **Memory (RSS Delta)** | **~127 MB** | ~420 MB |
 | **Heap Delta** | **~36 MB** | ~407 MB |

@@ -10,6 +10,7 @@ export interface CedictData {
     pinyins: string[];
     defLengths: Uint16Array;
     definitions: string;
+    tokens?: string[];
     trieChars: Uint16Array;
     trieValues: Uint32Array;
     trieChildIndices: Uint32Array;

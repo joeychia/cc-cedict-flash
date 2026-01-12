@@ -1,5 +1,5 @@
 import assert from 'node:assert'
-import { pinyinEn } from '../dist/cc-cedict-flash/src/index.js'
+import { pinyinEn } from '../dist/index.js'
 
 const api = { pinyinEn }
 
